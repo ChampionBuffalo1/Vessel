@@ -3,6 +3,8 @@ package cli
 import (
 	"os"
 
+	"github.com/ChampionBuffalo1/vessel/cli/command"
+
 	"github.com/spf13/cobra"
 )
 
@@ -23,4 +25,6 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.AddCommand(command.PullCmd)
+	rootCmd.AddCommand(command.ListCmd)
 }
