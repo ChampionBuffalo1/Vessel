@@ -3,8 +3,9 @@ package command
 import (
 	"fmt"
 
-	"github.com/ChampionBuffalo1/vessel/core"
-	"github.com/ChampionBuffalo1/vessel/core/command/image"
+	"github.com/ChampionBuffalo1/vessel/internal"
+	"github.com/ChampionBuffalo1/vessel/internal/command/image"
+
 	"github.com/spf13/cobra"
 )
 
@@ -23,14 +24,14 @@ var PullCmd = &cobra.Command{
 }
 
 func pullImage(imageName string) {
-	client, ctx, err := core.NewContainerdClient()
+	client, ctx, err := internal.NewContainerdClient()
 	if err != nil {
 		fmt.Println("Error creating containerd client:", err)
 		return
 	}
 	err = image.Pull(client, ctx, imageName)
 	if err != nil {
-		fmt.Println("Error pulling image:", err)
+		fmt.Println(err)
 		return
 	}
 	fmt.Println("Image pulled successfully")

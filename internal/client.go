@@ -1,17 +1,16 @@
-package core
+package internal
 
 import (
 	"context"
 
-	"github.com/ChampionBuffalo1/vessel/core/constant"
 	containerd "github.com/containerd/containerd/v2/client"
 	"github.com/containerd/containerd/v2/pkg/namespaces"
 )
 
 func NewContainerdClient(containerdOpts ...containerd.Opt) (*containerd.Client, context.Context, error) {
-	ctx := namespaces.WithNamespace(context.Background(), constant.VesselNamespace)
+	ctx := namespaces.WithNamespace(context.Background(), vesselNamespace)
 
-	client, err := containerd.New(constant.ContainerdSock, containerdOpts...)
+	client, err := containerd.New(containerdSock, containerdOpts...)
 	if err != nil {
 		return nil, nil, err
 	}
