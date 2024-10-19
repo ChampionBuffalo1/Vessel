@@ -1,4 +1,4 @@
-package internal
+package pkg
 
 const (
 	containerdSock  = "/run/containerd/containerd.sock"

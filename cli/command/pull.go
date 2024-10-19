@@ -3,13 +3,13 @@ package command
 import (
 	"fmt"
 
-	"github.com/ChampionBuffalo1/vessel/internal"
-	"github.com/ChampionBuffalo1/vessel/internal/command/image"
+	"github.com/ChampionBuffalo1/vessel/pkg"
+	"github.com/ChampionBuffalo1/vessel/pkg/command/image"
 
 	"github.com/spf13/cobra"
 )
 
-var PullCmd = &cobra.Command{
+var pullCmd = &cobra.Command{
 	Use:   "pull",
 	Short: "Pull an image from a registry",
 	Long:  `usage: vessel pull [OPTIONS] NAME[:TAG|@DIGEST]`,
@@ -24,7 +24,7 @@ var PullCmd = &cobra.Command{
 }
 
 func pullImage(imageName string) {
-	client, ctx, err := internal.NewContainerdClient()
+	client, ctx, err := pkg.NewContainerdClient()
 	if err != nil {
 		fmt.Println("Error creating containerd client:", err)
 		return
