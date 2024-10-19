@@ -3,7 +3,7 @@ package cli
 import (
 	"os"
 
-	"github.com/ChampionBuffalo1/vessel/cli/command"
+	command "github.com/ChampionBuffalo1/vessel/cli/commands"
 	"github.com/spf13/cobra"
 )
 
