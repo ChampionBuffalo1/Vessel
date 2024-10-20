@@ -18,6 +18,13 @@ func Stop(client *containerd.Client, ctx context.Context, img string) error {
 		return err
 	}
 	task, err := container.Task(ctx, nil)
+	defer func() {
+		_, err := task.Delete(ctx)
+		if err != nil {
+			fmt.Println("Error deleting task")
+		}
+	}()
+
 	if err != nil {
 		fmt.Println("Error getting task:")
 		return err
@@ -53,12 +60,7 @@ func Stop(client *containerd.Client, ctx context.Context, img string) error {
 			fmt.Println("Failure in sending sigkill")
 			return err
 		}
-		status, err := task.Delete(ctx)
-		if err != nil {
-			fmt.Println("Failure in deleting task")
-			return err
-		}
-		fmt.Println("Task deleted", status)
+		fmt.Println("Container stopped by SIGKILL")
 	case exitCode := <-exitC:
 		code, _, err := exitCode.Result()
 		if err != nil {
