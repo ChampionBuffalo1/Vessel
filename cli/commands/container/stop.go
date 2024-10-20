@@ -8,24 +8,23 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TOOD: Take a container-name opt
-var runCmd = &cobra.Command{
-	Use:   "run IMAGE",
-	Short: "Creates and runs a container",
+var stopCmd = &cobra.Command{
+	Use:   "stop CONTAINER_ID",
+	Short: "Stop a running container",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		runContainer(args[0])
+		stopContainer(args[0])
 	},
 }
 
-func runContainer(img string) {
+func stopContainer(containerID string) {
 	client, ctx, err := pkg.NewContainerdClient()
 	if err != nil {
 		fmt.Println("Error creating containerd client:", err)
 		return
 	}
-	err = container.Run(client, ctx, img)
+	err = container.Stop(client, ctx, containerID)
 	if err != nil {
-		fmt.Printf("Error running container: %v\n", err)
+		fmt.Printf("Error stopping the container: %v\n", err)
 	}
 }
