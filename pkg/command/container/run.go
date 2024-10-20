@@ -2,14 +2,13 @@ package container
 
 import (
 	"context"
-	"fmt"
 
 	containerd "github.com/containerd/containerd/v2/client"
 	"github.com/containerd/containerd/v2/pkg/oci"
 )
 
 const (
-	containerID = "my-container-random-id"
+	ContainerID = "my-container-random-id"
 	snapshotID  = "my-snapshot-random-id"
 )
 
@@ -18,12 +17,13 @@ func Run(client *containerd.Client, ctx context.Context, imgName string) error {
 	if err != nil {
 		return err
 	}
-	containers, err := client.Containers(ctx, "id=="+containerID)
+	container, err := client.LoadContainer(ctx, ContainerID)
 	// Create container if not found
-	if err != nil || len(containers) == 0 {
-		_, err = client.NewContainer(
+	if err != nil {
+		container, err = client.NewContainer(
 			ctx,
-			containerID,
+			ContainerID,
+			containerd.WithImage(img),
 			containerd.WithNewSnapshot(snapshotID, img),
 			containerd.WithNewSpec(oci.WithImageConfig(img)),
 		)
@@ -32,8 +32,5 @@ func Run(client *containerd.Client, ctx context.Context, imgName string) error {
 		}
 	}
 	// Start the container
-	err = Start(client, ctx, containerID)
-	fmt.Println("Error from starting in client: ", err)
-
-	return nil
+	return Start(client, ctx, container.ID())
 }
