@@ -17,3 +17,6 @@ A docker alternative to containerd with better Terminal experience
 ### Note
 `containerd` doesn't build any images it only pulls & runs containers. 
 For building images (e.g `docker build`) use [`moby/buildkit`](https://pkg.go.dev/github.com/moby/buildkit/client)
+
+> [!NOTE]
+> Use `log/slog` for strucutred logging to a file rather than `fmt.Println` in `pkg` 
