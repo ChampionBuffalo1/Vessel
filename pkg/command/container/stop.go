@@ -9,6 +9,7 @@ import (
 
 	"github.com/ChampionBuffalo1/vessel/pkg"
 	containerd "github.com/containerd/containerd/v2/client"
+	"github.com/containerd/errdefs"
 )
 
 func Stop(client *containerd.Client, ctx context.Context, img string) error {
@@ -17,18 +18,21 @@ func Stop(client *containerd.Client, ctx context.Context, img string) error {
 		fmt.Println("Error loading container")
 		return err
 	}
+
 	task, err := container.Task(ctx, nil)
+	if err != nil {
+		if errdefs.IsNotFound(err) {
+			return errors.New("container is not running")
+		}
+		return err
+	}
+
 	defer func() {
 		_, err := task.Delete(ctx)
 		if err != nil {
 			fmt.Println("Error deleting task")
 		}
 	}()
-
-	if err != nil {
-		fmt.Println("Error getting task:")
-		return err
-	}
 
 	status, err := task.Status(ctx)
 	if err != nil {
