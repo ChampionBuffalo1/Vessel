@@ -9,15 +9,15 @@ import (
 )
 
 var startCmd = &cobra.Command{
-	Use:   "start CONTAINER_ID",
+	Use:   "start [CONTAINER_ID]",
 	Short: "Starts a container with the matching ID",
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		containerID := ""
-		if len(args) > 1 {
-			containerID = args[1]
+		if len(args) > 0 {
+			containerID = args[0]
 		} else {
-			containerID = "random-container-id"
+			containerID = "my-container-random-id"
 		}
 		startContainer(containerID)
 	},
