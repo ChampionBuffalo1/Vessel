@@ -6,7 +6,9 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/ChampionBuffalo1/vessel/pkg"
 	containerd "github.com/containerd/containerd/v2/client"
 	"github.com/containerd/containerd/v2/pkg/cio"
 )
@@ -19,12 +21,10 @@ func Start(client *containerd.Client, ctx context.Context, containerID string) e
 	// Create a runtime task
 	// cio.WithStdio will attach the task's stdio to the current process's stdio
 	// The task has only been created within the container and not started
-
 	task, err := container.NewTask(ctx, cio.NewCreator(cio.WithStdio))
 	if err != nil {
 		return err
 	}
-	defer task.Delete(ctx)
 	// Set up a channel for waiting on task to exit
 	exitChannel, err := task.Wait(ctx)
 	if err != nil {
@@ -34,6 +34,7 @@ func Start(client *containerd.Client, ctx context.Context, containerID string) e
 	if err := task.Start(ctx); err != nil {
 		return err
 	}
+
 	// Setup  a handler to wait for the Ctrl + C input
 	// once we get the signal we terminal the task with sigterm
 	interruptC := make(chan os.Signal, 1)
@@ -41,15 +42,28 @@ func Start(client *containerd.Client, ctx context.Context, containerID string) e
 	<-interruptC
 
 	if err := task.Kill(ctx, syscall.SIGTERM); err != nil {
-		fmt.Println("Failure in sending sigkill", err)
+		fmt.Println("Failed in sending sigterm", err)
 		return err
 	}
 
-	exitCodeStatus := <-exitChannel
-	code, _, err := exitCodeStatus.Result()
-	if err != nil {
-		return err
+	killCtx, cancel := context.WithTimeout(ctx, time.Duration(pkg.ContainerStopTimeout*time.Second))
+	defer cancel()
+	select {
+	case <-killCtx.Done():
+		if err := task.Kill(ctx, syscall.SIGKILL); err != nil {
+			fmt.Println("Failure in sending sigkill", err)
+		}
+		status, err := task.Delete(ctx)
+		if err != nil {
+			fmt.Println("Failure in deleting task", err)
+		}
+		fmt.Println("Task deleted", status)
+	case exitCode := <-exitChannel:
+		code, _, err := exitCode.Result()
+		if err != nil {
+			fmt.Println("Failure in getting exit code", err)
+		}
+		fmt.Println("Task exit with status code: ", code)
 	}
-	fmt.Printf("Container Task exit with code: %d", code)
 	return nil
 }
