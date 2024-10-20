@@ -31,6 +31,5 @@ func Run(client *containerd.Client, ctx context.Context, imgName string) error {
 			return err
 		}
 	}
-	// Start the container
 	return Start(client, ctx, container.ID())
 }

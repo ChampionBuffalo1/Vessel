@@ -42,26 +42,29 @@ func Start(client *containerd.Client, ctx context.Context, containerID string) e
 	<-interruptC
 
 	if err := task.Kill(ctx, syscall.SIGTERM); err != nil {
-		fmt.Println("Failed in sending sigterm", err)
+		fmt.Println("Failed in sending sigterm")
 		return err
 	}
 
-	killCtx, cancel := context.WithTimeout(ctx, time.Duration(pkg.ContainerStopTimeout*time.Second))
+	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(pkg.ContainerStopTimeout*time.Second))
 	defer cancel()
 	select {
-	case <-killCtx.Done():
+	case <-timeoutCtx.Done():
 		if err := task.Kill(ctx, syscall.SIGKILL); err != nil {
-			fmt.Println("Failure in sending sigkill", err)
+			fmt.Println("Failure in sending sigkill")
+			return err
 		}
 		status, err := task.Delete(ctx)
 		if err != nil {
-			fmt.Println("Failure in deleting task", err)
+			fmt.Println("Failure in deleting task")
+			return err
 		}
 		fmt.Println("Task deleted", status)
 	case exitCode := <-exitChannel:
 		code, _, err := exitCode.Result()
 		if err != nil {
-			fmt.Println("Failure in getting exit code", err)
+			fmt.Println("Failure in getting exit code")
+			return err
 		}
 		fmt.Println("Task exit with status code: ", code)
 	}
