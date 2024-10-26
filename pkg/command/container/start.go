@@ -54,8 +54,7 @@ func Start(client *containerd.Client, ctx context.Context, containerID string) e
 	}
 
 	if status.Status == containerd.Stopped {
-		return fmt.Errorf(`stopped container cannot be re-started. please make sure the container task is deleted.
-		You can use the command "ctr -n vessel task rm %s" to delete the task`, containerID)
+		return errors.New(`stopped container cannot be re-started. please make sure the container task was properly removed`)
 	} else if status.Status == containerd.Pausing {
 		return errors.New("please wait for the container to finish pause before resuming it")
 	} else if status.Status == containerd.Paused {
@@ -78,8 +77,14 @@ func Start(client *containerd.Client, ctx context.Context, containerID string) e
 	signal.Notify(interruptC, syscall.SIGINT)
 	<-interruptC
 
-	// TODO: Handle the case where a user can run `stop` command before SIGINT is received:w
-	if err := task.Kill(ctx, syscall.SIGTERM); err != nil {
+	// Get the task if it is still running
+	runningTask, err := container.Task(ctx, nil)
+	if err != nil && errdefs.IsNotFound(err) {
+		// No task found for the container
+		return nil
+	}
+
+	if err := runningTask.Kill(ctx, syscall.SIGTERM); err != nil {
 		fmt.Println("Failed in sending sigterm")
 		return err
 	}
@@ -88,11 +93,11 @@ func Start(client *containerd.Client, ctx context.Context, containerID string) e
 	defer cancel()
 	select {
 	case <-timeoutCtx.Done():
-		if err := task.Kill(ctx, syscall.SIGKILL); err != nil {
+		if err := runningTask.Kill(ctx, syscall.SIGKILL); err != nil {
 			fmt.Println("Failure in sending sigkill")
 			return err
 		}
-		status, err := task.Delete(ctx)
+		status, err := runningTask.Delete(ctx)
 		if err != nil {
 			fmt.Println("Failure in deleting task")
 			return err
