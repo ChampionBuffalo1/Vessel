@@ -76,8 +76,8 @@ func Start(client *containerd.Client, ctx context.Context, containerID string) e
 		}
 	}
 
-	// Setup  a handler to wait for the Ctrl + C input
-	// once we get the signal we terminal the task with sigterm
+	// Set up a handler to wait for the Ctrl + C input
+	// once we get the signal we terminate the task with SIGTERM (man 7 signal)
 	interruptC := make(chan os.Signal, 1)
 	signal.Notify(interruptC, syscall.SIGINT)
 	<-interruptC
@@ -94,7 +94,7 @@ func Start(client *containerd.Client, ctx context.Context, containerID string) e
 		return err
 	}
 
-	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(pkg.ContainerStopTimeout*time.Second))
+	timeoutCtx, cancel := context.WithTimeout(ctx, pkg.ContainerStopTimeout*time.Second)
 	defer cancel()
 	select {
 	case <-timeoutCtx.Done():
