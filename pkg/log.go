@@ -11,8 +11,7 @@ var (
 	logger *slog.Logger
 )
 
-type LogLeveler struct {
-}
+type LogLeveler struct{}
 
 func (l *LogLeveler) Level() slog.Level {
 	env := os.Getenv("DISABLE_DEBUG_LOG")
@@ -26,7 +25,7 @@ const LOG_FILE = "vessel.log"
 
 func NewLogger() *slog.Logger {
 	once.Do(func() {
-		file, err := os.Open(LOG_FILE)
+		file, err := os.OpenFile(LOG_FILE, os.O_WRONLY|os.O_APPEND, 0666)
 		if err != nil {
 			file, err = os.Create(LOG_FILE)
 			if err != nil {
