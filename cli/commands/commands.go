@@ -7,7 +7,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func AttachCommands(rootCmd *cobra.Command) {
-	rootCmd.AddCommand(image.NewImageCommand())
-	rootCmd.AddCommand(container.NewContainerCommand())
+func GetCommands() []*cobra.Command {
+	commands := []*cobra.Command{
+		pullCmd,
+		image.NewImageCommand(),
+		container.NewContainerCommand(),
+	}
+	return commands
 }

@@ -8,6 +8,6 @@ func NewImageCommand() *cobra.Command {
 		Short: "Manage images",
 	}
 
-	cmd.AddCommand(listCmd, pullCmd)
+	cmd.AddCommand(listCmd)
 	return cmd
 }

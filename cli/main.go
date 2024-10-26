@@ -21,5 +21,8 @@ func Execute() {
 }
 
 func init() {
-	command.AttachCommands(rootCmd)
+	subCommands := command.GetCommands()
+	for _, cmd := range subCommands {
+		rootCmd.AddCommand(cmd)
+	}
 }
