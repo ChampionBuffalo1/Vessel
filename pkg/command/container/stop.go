@@ -12,8 +12,8 @@ import (
 	"github.com/containerd/errdefs"
 )
 
-func Stop(client *containerd.Client, ctx context.Context) error {
-	container, err := client.LoadContainer(ctx, ContainerID)
+func Stop(client *containerd.Client, ctx context.Context, containerID string) error {
+	container, err := client.LoadContainer(ctx, containerID)
 	if err != nil {
 		fmt.Println("Error loading container")
 		return err
