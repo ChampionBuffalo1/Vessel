@@ -9,5 +9,6 @@ func NewContainerCommand() *cobra.Command {
 	}
 	containerCmd.AddCommand(runCmd)
 	containerCmd.AddCommand(startCmd, stopCmd)
+	containerCmd.AddCommand(rmCmd)
 	return containerCmd
 }
