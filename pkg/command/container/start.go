@@ -38,7 +38,12 @@ func Start(client *containerd.Client, ctx context.Context, containerID string) e
 			return err
 		}
 	}
-	defer task.Delete(ctx) // Always delete the task as to not leave container in stopped state
+	defer func() {
+		_, err := task.Delete(ctx)
+		if err != nil {
+			fmt.Println("Error deleting task")
+		}
+	}() // Always delete the task as to not leave container in stopped state
 
 	// Set up a channel for waiting on task to exit
 	exitChannel, err := task.Wait(ctx)

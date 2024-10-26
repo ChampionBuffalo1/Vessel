@@ -12,7 +12,7 @@ import (
 	"github.com/containerd/errdefs"
 )
 
-func Stop(client *containerd.Client, ctx context.Context, img string) error {
+func Stop(client *containerd.Client, ctx context.Context) error {
 	container, err := client.LoadContainer(ctx, ContainerID)
 	if err != nil {
 		fmt.Println("Error loading container")
@@ -50,7 +50,7 @@ func Stop(client *containerd.Client, ctx context.Context, img string) error {
 		return err
 	}
 
-	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(pkg.ContainerStopTimeout*time.Second))
+	timeoutCtx, cancel := context.WithTimeout(ctx, pkg.ContainerStopTimeout*time.Second)
 	defer cancel()
 
 	if err = task.Kill(ctx, syscall.SIGTERM); err != nil {
