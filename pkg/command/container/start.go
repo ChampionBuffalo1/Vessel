@@ -3,13 +3,14 @@ package container
 import (
 	"context"
 	"errors"
-	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/ChampionBuffalo1/vessel/pkg"
+
 	containerd "github.com/containerd/containerd/v2/client"
 	"github.com/containerd/containerd/v2/pkg/cio"
 	"github.com/containerd/errdefs"
@@ -18,7 +19,7 @@ import (
 func Start(client *containerd.Client, ctx context.Context, containerID string) error {
 	container, err := client.LoadContainer(ctx, containerID)
 	if err != nil {
-		fmt.Println("Error loading container")
+		slog.Error("Error loading container", "error", err)
 		return err
 	}
 
@@ -30,31 +31,31 @@ func Start(client *containerd.Client, ctx context.Context, containerID string) e
 			// The task has only been created within the container and not started
 			task, err = container.NewTask(ctx, cio.NewCreator(cio.WithStdio))
 			if err != nil {
-				fmt.Println("Error creating task")
+				slog.Error("Error creating task", "error", err)
 				return err
 			}
 		} else {
-			fmt.Println("Error getting task")
+			slog.Error("Error getting task", "error", err)
 			return err
 		}
 	}
 	defer func() {
 		_, err := task.Delete(ctx)
 		if err != nil {
-			fmt.Println("Error deleting task")
+			slog.Error("Error deleting task", "error", err)
 		}
 	}() // Always delete the task as to not leave container in stopped state
 
 	// Set up a channel for waiting on task to exit
 	exitChannel, err := task.Wait(ctx)
 	if err != nil {
-		fmt.Println("Error waiting for task")
+		slog.Error("Error waiting for task", "error", err)
 		return err
 	}
 
 	status, err := task.Status(ctx)
 	if err != nil {
-		fmt.Println("Error getting task status")
+		slog.Error("Error getting task status", "error", err)
 		return err
 	}
 
@@ -65,13 +66,13 @@ func Start(client *containerd.Client, ctx context.Context, containerID string) e
 	} else if status.Status == containerd.Paused {
 		// Resume the container task
 		if err := task.Resume(ctx); err != nil {
-			fmt.Println("Error resuming task")
+			slog.Error("Error resuming task", "error", err)
 			return err
 		}
 	} else if status.Status == containerd.Created {
 		// Run the container task
 		if err := task.Start(ctx); err != nil {
-			fmt.Println("Error starting task")
+			slog.Error("Error starting task", "error", err)
 			return err
 		}
 	}
@@ -90,7 +91,7 @@ func Start(client *containerd.Client, ctx context.Context, containerID string) e
 	}
 
 	if err := runningTask.Kill(ctx, syscall.SIGTERM); err != nil {
-		fmt.Println("Failed in sending sigterm")
+		slog.Error("Failed in sending sigterm", "error", err)
 		return err
 	}
 
@@ -99,22 +100,22 @@ func Start(client *containerd.Client, ctx context.Context, containerID string) e
 	select {
 	case <-timeoutCtx.Done():
 		if err := runningTask.Kill(ctx, syscall.SIGKILL); err != nil {
-			fmt.Println("Failure in sending sigkill")
+			slog.Error("Failure in sending sigkill")
 			return err
 		}
 		status, err := runningTask.Delete(ctx)
 		if err != nil {
-			fmt.Println("Failure in deleting task")
+			slog.Error("Failure in deleting task", "error", err)
 			return err
 		}
-		fmt.Println("Task deleted", status)
+		slog.Error("Task deleted", "status", status)
 	case exitCode := <-exitChannel:
 		code, _, err := exitCode.Result()
 		if err != nil {
-			fmt.Println("Failure in getting exit code")
+			slog.Error("Failure in getting exit code")
 			return err
 		}
-		fmt.Println("Task exit with status code: ", code)
+		slog.Error("Task exited", "code", code)
 	}
 	return nil
 }
