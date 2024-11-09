@@ -3,6 +3,7 @@ package command
 import (
 	"fmt"
 
+	"github.com/ChampionBuffalo1/vessel/cli/charm"
 	"github.com/ChampionBuffalo1/vessel/pkg"
 	"github.com/ChampionBuffalo1/vessel/pkg/command/image"
 
@@ -16,7 +17,7 @@ var pullCmd = &cobra.Command{
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			// TODO: add charm cli UI here
+			charm.NewBubbleTea(charm.PullPage)
 		} else {
 			pullImage(args[0])
 		}
