@@ -6,6 +6,19 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const (
+	PullPage page = iota
+	ContainerImage
+)
+
+func NewBubbleTea(page page) {
+	model := newModel(page)
+	prog := tea.NewProgram(model)
+	if _, err := prog.Run(); err != nil {
+		panic(err)
+	}
+}
+
 type model struct {
 	width    int
 	height   int
@@ -13,38 +26,6 @@ type model struct {
 	keymap   keyMap
 	state    *state
 	renderer *lipgloss.Renderer
-}
-
-type state struct {
-	pull pullState
-}
-
-type page = uint8
-
-const (
-	PullPage page = iota
-	ContainerImage
-)
-
-func newModel(page page) model {
-	m := model{
-		width:    0,
-		height:   0,
-		page:     page,
-		keymap:   KeyMap,
-		state:    newState(page),
-		renderer: lipgloss.DefaultRenderer(),
-	}
-	return m
-}
-
-func newState(page page) *state {
-	state := &state{}
-	switch page {
-	case PullPage:
-		state.pull = newPullState()
-	}
-	return state
 }
 
 func (m model) Init() tea.Cmd {
@@ -83,10 +64,27 @@ func (m model) View() string {
 	return ""
 }
 
-func NewBubbleTea(page page) {
-	model := newModel(page)
-	prog := tea.NewProgram(model)
-	if _, err := prog.Run(); err != nil {
-		panic(err)
+type state struct {
+	pull pullState
+}
+
+type page = uint8
+
+func newModel(page page) model {
+	m := model{
+		page:     page,
+		keymap:   KeyMap,
+		state:    newState(page),
+		renderer: lipgloss.DefaultRenderer(),
 	}
+	return m
+}
+
+func newState(page page) *state {
+	state := &state{}
+	switch page {
+	case PullPage:
+		state.pull = newPullState()
+	}
+	return state
 }
