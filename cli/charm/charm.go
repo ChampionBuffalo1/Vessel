@@ -73,7 +73,7 @@ type page = uint8
 func newModel(page page) model {
 	m := model{
 		page:     page,
-		keymap:   KeyMap,
+		keymap:   keys,
 		state:    newState(page),
 		renderer: lipgloss.DefaultRenderer(),
 	}

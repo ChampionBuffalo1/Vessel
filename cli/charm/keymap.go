@@ -9,9 +9,21 @@ type keyMap struct {
 	Enter key.Binding
 }
 
-var KeyMap = keyMap{
+func (k keyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Up, k.Down, k.Quit, k.Enter}
+}
+
+func (k keyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Up, k.Down},
+		{k.Quit, k.Enter},
+	}
+}
+
+var keys = keyMap{
 	Enter: key.NewBinding(
 		key.WithKeys("enter"),
+		key.WithHelp("enter", "select"),
 	),
 	Up: key.NewBinding(
 		key.WithKeys("k", "up"),
